@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model History {
+  id              String        @id @default(uuid())
+  prompt_message  String    
+  tags_id         String?       // Optional foreign key to Tags
+  create_at       DateTime      @default(now())
+  
+  // Relations
+  tag             Tags?         @relation(fields: [tags_id], references: [id])
+  output_logs     OutputGenerate[]  // One input can have multiple outputs
+
+  @@map("history")
+}
+
+model OutputGenerate {
+  id                String      @id @default(uuid())
+  history_id        String      // Foreign key to History
+  prompt_image_url  String
+  description       String
+  output_tags       String      // Could be JSON or comma-separated tags
+  
+  // Relations
+  history         History   @relation(fields: [history_id], references: [id])
+
+  @@map("output_generate")
+}
+
+model Tags {
+  id          String        @id @default(uuid())
+  image_url   String
+  name        String
+  description String
+
+  // Back relation to History
+  history     History[]
+
+  @@map("tags")
+}

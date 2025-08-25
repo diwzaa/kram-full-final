@@ -36,7 +36,7 @@ const HD_IMAGE_CONFIG = {
 
 // Template for Kram-specific enhanced prompts
 const KRAM_PROMPT_TEMPLATE =
-	`A flat 2D view of traditional handwoven textile fabric with intricate geometric patterns, featuring a precise pixel-perfect grid structure similar to cross-stitch or counted thread embroidery. The fabric displays a repeating pattern with crisp, clean geometric shapes including diamonds, chevrons, stars, and traditional motifs. Use a limited color palette of deep indigo blue, bright red, and white/cream colors on a neutral background. The pattern should have sharp, defined edges with no blurring or anti-aliasing, creating a authentic handwoven appearance. Show only the fabric texture in a flat, straight-on view with no folds, shadows, or dimensional effects. The woven pattern {user_prompt}
+	`A flat 2D view of traditional handwoven textile fabric with intricate geometric patterns, featuring a precise pixel-perfect grid structure similar to cross-stitch or counted thread embroidery. The fabric displays a repeating pattern with crisp, clean geometric shapes including diamonds, chevrons, stars, and traditional motifs. Use a limited color palette of deep indigo blue and white colors on a neutral background. The pattern should have sharp, defined edges with no blurring or anti-aliasing, creating a authentic handwoven appearance. Show only the fabric texture in a flat, straight-on view with no folds, shadows, or dimensional effects. The woven pattern {user_prompt}
 
 {tag_context}
 

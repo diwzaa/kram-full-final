@@ -8,6 +8,14 @@
     "start": "next start",
     "lint": "eslint"
   },
+  "prettier": {
+    "useTabs": true,
+    "printWidth": 200,
+    "semi": true,
+    "singleQuote": true,
+    "tabWidth": 4,
+    "trailingComma": "all"
+  },
   "dependencies": {
     "@prisma/client": "^6.14.0",
     "@t3-oss/env-nextjs": "^0.13.8",
@@ -15,11 +23,12 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.541.0",
     "next": "15.5.0",
+    "openai": "^5.15.0",
     "pg": "^8.16.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "tailwind-merge": "^3.3.1",
-    "zod": "^4.1.1"
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

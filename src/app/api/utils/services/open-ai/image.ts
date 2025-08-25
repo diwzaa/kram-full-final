@@ -36,21 +36,30 @@ const HD_IMAGE_CONFIG = {
 
 // Template for Kram-specific enhanced prompts
 const KRAM_PROMPT_TEMPLATE =
-	`ภาพผ้าฝ้ายทอย้อมครามพื้นเมืองแบบดั้งเดิม (ผ้าคราม) แสดงเป็นผืนแบนราบ สองมิติ ไม่มีเงา ไม่มีแสงสะท้อน ไม่มีรอยพับ ผ้ามีพื้นสีน้ำเงินครามเข้ม เนื้อผ้าเรียบเนียน และใช้สำหรับใส่ลวดลายตามที่ระบบกำหนดเท่านั้น ห้ามสร้างลวดลายที่ซับซ้อนเกินจริงหรือเกินความเป็นผ้าครามดั้งเดิม ลวดลายที่ต้องการคือ {user_prompt}
+  `A flat 2D pattern inspired by traditional Thai indigo textile (ผ้าครามพื้นเมือง), shown in the style of counted-thread embroidery or cross-stitch chart. The design should consist of repeating geometric folk motifs such as diamonds, chevrons, stars, and small ornamental crosses. The layout must be symmetrical, pixel-perfect, and arranged on a precise square grid. The appearance should be flat, digital, and sharp-edged, resembling a cross-stitch embroidery guide rather than real fabric texture.
+
+Use a limited color palette of deep indigo blue (คราม), bright red accents, and white background for contrast. Avoid gradients, shadows, folds, or realistic cloth rendering. Focus only on the geometric motif structure.
+
+The embroidery pattern {user_prompt}
 
 {tag_context}
 
-ข้อกำหนดทางเทคนิค:
-- ลวดลายพื้นบ้านดั้งเดิมแบบผ้าคราม
-- ใช้สีเรียบเท่านั้น: ครามเข้ม ครามอ่อน ขาว
-- ขอบเส้นคมชัด ไม่มีเงา ไม่มีการไล่เฉดสี
-- ภาพสองมิติแบนราบ (Flat 2D pattern chart) ไม่ใช่ผ้าจริง
+Technical requirements:
+- Pixel grid cross-stitch style
+- Traditional indigo folk motifs (ผ้าคราม style)
+- Symmetrical, repeating geometric layout
+- Limited solid colors: deep indigo, bright red, white
+- Sharp, clean edges with no blurring or shading
+- Flat 2D pattern chart (not realistic fabric)
 - {style_guidance}` as const;
+
+
+
 
 // Style guidance mappings
 const STYLE_GUIDANCE: Record<string, string> = {
-	vivid: 'ตัดกันของสีที่ชัดเจนในสไตล์ลายปักครอสติชแบบแบนราบ ใช้สีน้ำเงินครามเข้มและสีแดงสด สร้างลวดลายเรขาคณิตคมชัด เช่น ลายข้าวหลามตัดและลายฟันปลา ไม่มีการไล่เฉดสีหรือพื้นผิว',
-	natural: 'ลักษณะผ้าครามพื้นบ้านแบบดั้งเดิมในสไตล์ตารางปักครอสติช ใช้โทนสีน้ำเงินครามที่มีการไล่ระดับเล็กน้อย พร้อมลายเรขาคณิตเรียบง่ายดั้งเดิม แสดงเป็นลายแบนราบสองมิติ ไม่มีเงาหรือรอยยับ',
+	vivid: 'Bold color contrast with sharp geometric definition, vibrant reds and deep blues creating striking diamond and chevron patterns',
+	natural: 'Subtle color variations with traditional folk art styling, authentic handwoven texture with slight irregularities that add character',
 } as const;
 
 /**

@@ -269,6 +269,7 @@ Please provide a description that includes:
 3. Style and technique used
 4. How it fulfills the original creative intent
 5. What makes it visually striking or unique
+6. Answer in Thai
 
 Keep it engaging and concise (2-3 sentences). Focus on what makes this image special.
 

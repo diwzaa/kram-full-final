@@ -1,4 +1,4 @@
-// Optimized Chat Helper for Kram Pattern System
+// Optimized Chat Helper for Kram Pattern System - Fixed Thai Language Support
 import { getClient, logger, withRetry } from './open-ai';
 
 // Interfaces
@@ -61,15 +61,15 @@ const ASSISTANT_RESPONSE_TEMPLATE = {
 	refusal: null,
 } as const;
 
-// System prompts for different Kram Pattern use cases
+// System prompts for different Kram Pattern use cases - Updated for Thai language
 export const SYSTEM_PROMPTS = {
-	IMAGE_DESCRIPTION: `You are an expert art critic and image analyst. Create engaging, detailed descriptions of generated images that capture their visual elements, artistic style, mood, and creative impact. Focus on what makes each image unique and compelling for a creative gallery audience.`,
+	IMAGE_DESCRIPTION: `คุณเป็นนักวิจารณ์ศิลปะผู้เชี่ยวชาญและนักวิเคราะห์ภาพ สร้างคำอธิบายที่น่าสนใจและมีรายละเอียดของภาพที่สร้างขึ้น ที่จับภาพองค์ประกอบทางภาพ สไตล์ศิลปะ อารมณ์ และผลกระทบเชิงสร้างสรรค์ เน้นสิ่งที่ทำให้แต่ละภาพมีความเฉพาะตัวและดึงดูดใจสำหรับผู้ชมแกลเลอรี่เชิงสร้างสรรค์ ตอบเป็นภาษาไทยเสมอ`,
 
-	TAG_GENERATION: `You are a creative content categorization expert. Generate relevant, searchable tags for images based on their content, style, and artistic elements. Provide concise, useful tags that help users discover and organize creative content.`,
+	TAG_GENERATION: `คุณเป็นผู้เชี่ยวชาญการจัดหมวดหมู่เนื้อหาเชิงสร้างสรรค์ สร้างแท็กที่เกี่ยวข้องและค้นหาได้สำหรับภาพตามเนื้อหา สไตล์ และองค์ประกอบทางศิลปะ ให้แท็กที่กระชับและมีประโยชน์ที่ช่วยให้ผู้ใช้ค้นหาและจัดระเบียบเนื้อหาเชิงสร้างสรรค์ ตอบเป็นภาษาไทยเสมอ`,
 
-	PROMPT_ENHANCEMENT: `You are a creative prompt engineer specializing in image generation. Enhance user prompts to be more specific, visually descriptive, and optimized for AI image generation while maintaining the user's original intent.`,
+	PROMPT_ENHANCEMENT: `คุณเป็นวิศวกรพรอมต์เชิงสร้างสรรค์ที่เชี่ยวชาญด้านการสร้างภาพ ปรับปรุงพรอมต์ของผู้ใช้ให้มีความเฉพาะเจาะจงมากขึ้น มีการบรรยายภาพที่ชัดเจน และเหมาะสมสำหรับการสร้างภาพด้วย AI ในขณะที่ยังคงเจตนาเดิมของผู้ใช้`,
 
-	GENERAL_ASSISTANT: `You are a helpful assistant specialized in creative arts and image generation. Provide clear, informative responses while maintaining a creative and inspiring tone.`,
+	GENERAL_ASSISTANT: `คุณเป็นผู้ช่วยที่มีประโยชน์ที่เชี่ยวชาญด้านศิลปะเชิงสร้างสรรค์และการสร้างภาพ ให้คำตอบที่ชัดเจนและให้ข้อมูลในขณะที่รักษาโทนเสียงที่สร้างสรรค์และสร้างแรงบันดาลใจ ตอบเป็นภาษาไทยเสมอ`,
 } as const;
 
 /**
@@ -92,11 +92,11 @@ function validateMessage(message: Message): { valid: boolean; error?: string } {
 }
 
 /**
- * Estimate token count (rough approximation)
+ * Estimate token count (rough approximation) - Adjusted for Thai language
  */
 function estimateTokenCount(text: string): number {
-	// Rough estimation: 1 token ≈ 4 characters for English text
-	return Math.ceil(text.length / 4);
+	// Thai text typically uses more tokens per character than English
+	return Math.ceil(text.length / 3);
 }
 
 /**
@@ -245,7 +245,7 @@ export async function chatHelper(
 }
 
 /**
- * Specialized function for image description generation
+ * Specialized function for image description generation in Thai - FIXED
  */
 export async function generateImageDescription(
 	originalPrompt: string,
@@ -256,24 +256,23 @@ export async function generateImageDescription(
 		maxTokens?: number;
 	} = {},
 ): Promise<string> {
-	const tagContext = tags.length > 0 ? `\n\nStyle context from selected tags:\n${tags.map((tag) => `- ${tag.name}: ${tag.description}`).join('\n')}` : '';
+	const tagContext = tags.length > 0 ? `\n\nบริบทสไตล์จากแท็กที่เลือก:\n${tags.map((tag) => `- ${tag.name}: ${tag.description}`).join('\n')}` : '';
 
-	const prompt = `Analyze this generated image and create a compelling description for a creative gallery.
+	const prompt = `วิเคราะห์ภาพที่สร้างขึ้นนี้และสร้างคำอธิบายที่น่าสนใจสำหรับแกลเลอรี่เชิงสร้างสรรค์
 
-Original user prompt: "${originalPrompt}"
+พรอมต์ของผู้ใช้เดิม: "${originalPrompt}"
 ${tagContext}
 
-Please provide a description that includes:
-1. Main visual elements and composition
-2. Colors, lighting, and artistic mood  
-3. Style and technique used
-4. How it fulfills the original creative intent
-5. What makes it visually striking or unique
-6. Answer in Thai
+โปรดให้คำอธิบายที่รวมถึง:
+1. องค์ประกอบทางภาพหลักและการจัดวาง
+2. สี แสง และอารมณ์ทางศิลปะ
+3. สไตล์และเทคนิคที่ใช้
+4. วิธีการตอบสนองเจตนาเชิงสร้างสรรค์เดิม
+5. สิ่งที่ทำให้ภาพนี้มีความโดดเด่นหรือเฉพาะตัว
 
-Keep it engaging and concise (2-3 sentences). Focus on what makes this image special.
+ให้คำอธิบายที่น่าสนใจและกระชับ (3-4 ประโยค) เน้นสิ่งที่ทำให้ภาพนี้พิเศษ
 
-Note: I cannot actually see the image at ${imageUrl}, so base your description on the original prompt and context provided.`;
+**ตอบเป็นภาษาไทยเท่านั้น และให้คำอธิบายที่สมบูรณ์**`;
 
 	const message: Message = {
 		role: 'user',
@@ -284,19 +283,19 @@ Note: I cannot actually see the image at ${imageUrl}, so base your description o
 		const result = await chatHelper(message, {
 			model: options.model || 'gpt-4-turbo',
 			systemConfiguration: SYSTEM_PROMPTS.IMAGE_DESCRIPTION,
-			maxTokens: options.maxTokens || 300,
+			maxTokens: options.maxTokens || 500, // Increased significantly for Thai language
 			temperature: 0.7,
 		});
 
 		return result.message.content;
 	} catch (error) {
 		logger.error('Failed to generate image description', error);
-		return `A creative image generated from: "${originalPrompt}"`;
+		return `ภาพเชิงสร้างสรรค์ที่สร้างจาก: "${originalPrompt}"`;
 	}
 }
 
 /**
- * Specialized function for output tag generation
+ * Specialized function for output tag generation in Thai - FIXED
  */
 export async function generateOutputTags(
 	originalPrompt: string,
@@ -308,24 +307,25 @@ export async function generateOutputTags(
 	} = {},
 ): Promise<string> {
 	const existingTagNames = existingTags.map((tag) => tag.name).join(', ');
-	const existingTagsContext = existingTagNames ? `\n\nExisting style tags used: ${existingTagNames}` : '';
+	const existingTagsContext = existingTagNames ? `\n\nแท็กสไตล์ที่มีอยู่: ${existingTagNames}` : '';
 
-	const prompt = `Generate 4-6 relevant tags for this creative image based on the prompt and description.
+	const prompt = `สร้างแท็ก 4-6 ตัวที่เกี่ยวข้องสำหรับภาพเชิงสร้างสรรค์นี้ตามพรอมต์และคำอธิบาย
 
-Original prompt: "${originalPrompt}"
-Generated description: "${description}"
+พรอมต์เดิม: "${originalPrompt}"
+คำอธิบายที่สร้าง: "${description}"
 ${existingTagsContext}
 
-Create tags that are:
-- Relevant to visual content and style
-- Useful for search and categorization  
-- Concise (1-2 words each)
-- Diverse (covering subject, style, mood, technique)
-- Different from existing tags when possible
-- Answer in Thai
+สร้างแท็กที่:
+- เกี่ยวข้องกับเนื้อหาทางภาพและสไตล์
+- มีประโยชน์สำหรับการค้นหาและจัดหมวดหมู่
+- กระชับ (1-2 คำในแต่ละแท็ก)
+- หลากหลาย (ครอบคลุมหัวข้อ สไตล์ อารมณ์ เทคนิค)
+- แตกต่างจากแท็กที่มีอยู่หากเป็นไปได้
 
-Format: Return only the tags separated by commas, nothing else.
-Example: "abstract, vibrant, geometric, digital, atmospheric"`;
+รูปแบบ: ส่งคืนเฉพาะแท็กที่คั่นด้วยจุลภาคเท่านั้น ไม่ต้องใส่อย่างอื่น
+ตัวอย่าง: "นก, ป่าเขา, ธรรมชาติ, สีเขียว, สงบ, ศิลปะดิจิทัล"
+
+**ตอบเป็นภาษาไทยเท่านั้น และส่งคืนเฉพาะแท็กที่คั่นด้วยจุลภาค**`;
 
 	const message: Message = {
 		role: 'user',
@@ -336,18 +336,28 @@ Example: "abstract, vibrant, geometric, digital, atmospheric"`;
 		const result = await chatHelper(message, {
 			model: options.model || 'gpt-4-turbo',
 			systemConfiguration: SYSTEM_PROMPTS.TAG_GENERATION,
-			maxTokens: options.maxTokens || 100,
+			maxTokens: options.maxTokens || 200, // Increased for Thai language
 			temperature: 0.5,
 		});
 
-		// Clean up the response to ensure it's just comma-separated tags
-		return result.message.content
-			.replace(/[^\w\s,]/g, '')
-			.replace(/\s+/g, ' ')
+		// Clean up the response - FIXED regex to handle Thai characters properly
+		const cleanedResponse = result.message.content
+			.replace(/[^\u0E00-\u0E7Fa-zA-Z\s,]/g, '') // Allow Thai characters, English letters, spaces, and commas
+			.replace(/\s+/g, ' ') // Replace multiple spaces with single space
+			.replace(/,\s*,/g, ',') // Remove duplicate commas
+			.replace(/^\s*,|,\s*$/g, '') // Remove leading/trailing commas
 			.trim();
+
+		// Validate that we have actual content
+		if (!cleanedResponse || cleanedResponse.length < 3) {
+			logger.info('Generated tags were empty or too short, using fallback');
+			return 'สร้างสรรค์, ศิลปะ, ดิจิทัล, ปัญญาประดิษฐ์';
+		}
+
+		return cleanedResponse;
 	} catch (error) {
 		logger.error('Failed to generate output tags', error);
-		return 'generated, creative, ai-art, digital';
+		return 'สร้างสรรค์, ศิลปะ, ดิจิทัล, ปัญญาประดิษฐ์';
 	}
 }
 

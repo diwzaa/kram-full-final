@@ -178,7 +178,7 @@ export async function generateKramPattern(request: KramPatternRequest): Promise<
 				model: 'dall-e-3',
 				size: request.dalle_options?.size || '1024x1024',
 				quality: request.dalle_options?.quality || 'standard',
-				style: request.dalle_options?.style || 'vivid',
+				style: request.dalle_options?.style || 'natural',
 				tags: tagContext,
 			});
 			imageGenTime = Date.now() - imageGenStartTime;

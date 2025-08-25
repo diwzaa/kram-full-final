@@ -322,6 +322,7 @@ Create tags that are:
 - Concise (1-2 words each)
 - Diverse (covering subject, style, mood, technique)
 - Different from existing tags when possible
+- Answer in Thai
 
 Format: Return only the tags separated by commas, nothing else.
 Example: "abstract, vibrant, geometric, digital, atmospheric"`;

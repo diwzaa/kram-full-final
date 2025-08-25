@@ -5,9 +5,9 @@ import { GalleryResponse, ApiResponse } from '@/types/gallery';
 const prisma = new PrismaClient();
 
 // GET /api/v1/kram/gallery/[id] - Get specific history record by ID
-export async function GET(request: NextRequest, { params }: { params: { id: string } }): Promise<NextResponse<ApiResponse<GalleryResponse>>> {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }): Promise<NextResponse<ApiResponse<GalleryResponse>>> {
 	try {
-		const { id } = params;
+		const { id } = await params;
 
 		// Validate UUID format
 		const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

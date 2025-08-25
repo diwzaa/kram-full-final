@@ -35,32 +35,37 @@ const HD_IMAGE_CONFIG = {
 } as const;
 
 // Template for Kram-specific enhanced prompts
-const KRAM_PROMPT_TEMPLATE = `Create an artistic image with the following concept: {user_prompt}
+const KRAM_PROMPT_TEMPLATE =
+	`A flat 2D view of traditional handwoven textile fabric with intricate geometric patterns, featuring a precise pixel-perfect grid structure similar to cross-stitch or counted thread embroidery. The fabric displays a repeating pattern with crisp, clean geometric shapes including diamonds, chevrons, stars, and traditional motifs. Use a limited color palette of deep indigo blue, bright red, and white/cream colors on a neutral background. The pattern should have sharp, defined edges with no blurring or anti-aliasing, creating a authentic handwoven appearance. Show only the fabric texture in a flat, straight-on view with no folds, shadows, or dimensional effects. The woven pattern {user_prompt}
 
 {tag_context}
 
-Style requirements:
-- High artistic quality with attention to detail
-- Rich colors and compelling composition  
-- Professional creative content suitable for a gallery
-- {style_guidance}
-
-Main concept: {user_prompt}` as const;
+Technical requirements:
+- Pixel-perfect geometric precision
+- Traditional folk art motifs and symmetry
+- Limited color palette (3-4 colors maximum)
+- Repeating pattern structure
+- Sharp, clean edges without gradients
+- {style_guidance}` as const;
 
 // Style guidance mappings
 const STYLE_GUIDANCE: Record<string, string> = {
-	vivid: 'Bold, vibrant colors with dramatic contrast and dynamic composition',
-	natural: 'Realistic lighting and natural color palette with organic flow',
+	vivid: 'Bold color contrast with sharp geometric definition, vibrant reds and deep blues creating striking diamond and chevron patterns',
+	natural: 'Subtle color variations with traditional folk art styling, authentic handwoven texture with slight irregularities that add character',
 } as const;
 
 /**
  * Build enhanced prompt with tag context and style guidance
  */
-function buildEnhancedPrompt(userPrompt: string, tags: ReadonlyArray<TagContext> = [], style: 'vivid' | 'natural' = 'vivid'): string {
-	// Build tag context efficiently
-	const tagContext = tags.length > 0 ? `\nStyle inspiration and context:\n${tags.map((tag) => `- ${tag.name}: ${tag.description}`).join('\n')}\n` : '';
 
-	// Get style guidance
+function buildEnhancedPrompt(userPrompt: string, tags: ReadonlyArray<{ name: string; description: string }> = [], style: 'vivid' | 'natural' = 'vivid'): string {
+	// Build tag context efficiently for geometric textile styling
+	const tagContext =
+		tags.length > 0
+			? `\nTraditional pattern inspiration and geometric techniques:\n${tags.map((tag) => `- ${tag.name}: ${tag.description} (adapted for geometric handwoven textile patterns)`).join('\n')}\n`
+			: '';
+
+	// Get style guidance for geometric textile context
 	const styleGuidance = STYLE_GUIDANCE[style] || STYLE_GUIDANCE.vivid;
 
 	// Replace template variables efficiently
@@ -109,7 +114,7 @@ export async function imageHelper(
 	const startTime = Date.now();
 
 	// Extract options with defaults
-	const { model = 'dall-e-3', size = '1024x1024', quality = 'standard', style = 'vivid', tags = [] } = options;
+	const { model = 'dall-e-3', size = '1024x1024', quality = 'standard', style = 'natural', tags = [] } = options;
 
 	logger.debug('Starting image generation', {
 		originalPrompt: prompt,

@@ -36,18 +36,22 @@ const HD_IMAGE_CONFIG = {
 
 // Template for Kram-specific enhanced prompts
 const KRAM_PROMPT_TEMPLATE =
-	`A flat 2D view of traditional handwoven textile fabric with intricate geometric patterns, featuring a precise pixel-perfect grid structure similar to cross-stitch or counted thread embroidery. The fabric displays a repeating pattern with crisp, clean geometric shapes including diamonds, chevrons, stars, and traditional motifs. Use a limited color palette of deep indigo blue and white colors on a neutral background. The pattern should have sharp, defined edges with no blurring or anti-aliasing, creating a authentic handwoven appearance. Show only the fabric texture in a flat, straight-on view with no folds, shadows, or dimensional effects. The woven pattern {user_prompt}
+  `A flat 2D view of traditional handwoven indigo textile fabric (ผ้าครามพื้นเมืองทอมือ) with intricate geometric patterns, featuring a precise pixel-perfect grid structure similar to cross-stitch or counted thread embroidery. The fabric displays a repeating folk pattern with crisp, clean geometric shapes including diamonds, chevrons, stars, and ornamental motifs. Motifs may include red diamond outlines combined with indigo blue details on a deep indigo background, balanced by white highlights for contrast. The style emphasizes strong symmetry and authentic handwoven appearance.
+
+The woven indigo fabric pattern {user_prompt}
 
 {tag_context}
 
 Technical requirements:
 - Pixel-perfect geometric precision
-- Traditional folk art motifs and symmetry
-- Limited color with indigo blue, white colors
-- Repeating pattern structure
+- Traditional folk art embroidery motifs and symmetry
+- Limited color palette: deep indigo (คราม), bright red, white
+- Repeating diamond-based structure with ornamental variations
 - Sharp, clean edges without gradients
 - Fill areas with solid colors
+- Authentic handwoven / embroidery textile look
 - {style_guidance}` as const;
+
 
 // Style guidance mappings
 const STYLE_GUIDANCE: Record<string, string> = {

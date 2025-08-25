@@ -283,7 +283,6 @@ ${tagContext}
 		const result = await chatHelper(message, {
 			model: options.model || 'gpt-4-turbo',
 			systemConfiguration: SYSTEM_PROMPTS.IMAGE_DESCRIPTION,
-			maxTokens: options.maxTokens || 500, // Increased significantly for Thai language
 			temperature: 0.7,
 		});
 

@@ -43,9 +43,10 @@ const KRAM_PROMPT_TEMPLATE =
 Technical requirements:
 - Pixel-perfect geometric precision
 - Traditional folk art motifs and symmetry
-- Limited color palette (3-4 colors maximum)
+- Limited color with indigo blue, white colors
 - Repeating pattern structure
 - Sharp, clean edges without gradients
+- Fill areas with solid colors
 - {style_guidance}` as const;
 
 // Style guidance mappings

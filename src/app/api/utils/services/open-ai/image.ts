@@ -45,7 +45,7 @@ The woven indigo fabric pattern {user_prompt}
 Technical requirements:
 - Pixel-perfect geometric precision
 - Traditional folk art embroidery motifs and symmetry
-- Limited color palette: deep indigo (คราม), bright red, white
+- Limited color palette: deep indigo (คราม), white
 - Repeating diamond-based structure with ornamental variations
 - Sharp, clean edges without gradients
 - Fill areas with solid colors

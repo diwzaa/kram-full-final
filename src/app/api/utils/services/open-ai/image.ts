@@ -36,7 +36,7 @@ const HD_IMAGE_CONFIG = {
 
 // Template for Kram-specific enhanced prompts
 const KRAM_PROMPT_TEMPLATE =
-  `A flat 2D pattern inspired by traditional Thai indigo textile (ผ้าครามพื้นเมือง), shown in the style of counted-thread embroidery or cross-stitch chart. The design should consist of repeating geometric folk motifs such as diamonds, chevrons, stars, and small ornamental crosses. The layout must be symmetrical, pixel-perfect, and arranged on a precise square grid. The appearance should be flat, digital, and sharp-edged, resembling a cross-stitch embroidery guide rather than real fabric texture.
+  `A flat 2D pattern inspired by traditional Thai indigo textile (ผ้าครามพื้นเมือง), shown in the style of counted-thread embroidery or cross-stitch chart. The design should consist of repeating geometric folk motifs. The layout must be symmetrical, pixel-perfect, and arranged on a precise square grid. The appearance should be flat, digital, and sharp-edged, resembling a cross-stitch embroidery guide rather than real fabric texture.
 
 Use a limited color palette of deep indigo blue (คราม) and white background for contrast. Avoid gradients, shadows, folds, or realistic cloth rendering. Focus only on the geometric motif structure.
 
@@ -45,12 +45,11 @@ The embroidery pattern {user_prompt}
 {tag_context}
 
 Technical requirements:
-- Pixel grid cross-stitch style
 - Traditional indigo folk motifs (ผ้าคราม style)
-- Symmetrical, repeating geometric layout
+- Symmetrical, repeating layout
 - Limited solid colors: deep indigo, white
 - Sharp, clean edges with no blurring or shading
-- Flat 2D pattern chart (not realistic fabric)
+- Flat 2D pattern (not realistic fabric)
 - {style_guidance}` as const;
 
 

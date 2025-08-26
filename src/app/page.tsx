@@ -222,7 +222,7 @@ const KramHomePage: React.FC = () => {
 						<br />
 						<span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">ลวดลายผ้าคราม​ไทย</span>
 					</h1>
-					<p className="text-lg text-gray-600 mb-12 max-w-2xl mx-auto">เก็บข้อมูลลวดลายผ่าครามดั้งเดิม และสร้างลายใหม่ด้วยเทคโนโลยี AI</p>
+					<p className="text-lg text-gray-600 mb-12 max-w-2xl mx-auto">เก็บข้อมูลลวดลายผ้าครามดั้งเดิม และสร้างลายใหม่ด้วยเทคโนโลยี AI</p>
 
 					{/* Search Bar */}
 					<div className="max-w-2xl mx-auto mb-8">

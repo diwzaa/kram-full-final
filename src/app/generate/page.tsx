@@ -501,11 +501,11 @@ const KramGeneratePageComponent: React.FC = () => {
 
 								{/* Main Prompt */}
 								<div className="mb-6">
-									<label className="block text-sm font-medium text-gray-700 mb-2">อธิบายลายที่ต้องการ เช่น &ldquo;ลายครองเป็น ลายดอกไผ่ ลายมังกรทองคำ&rdquo;</label>
+									<label className="block text-sm font-medium text-gray-700 mb-2">อธิบายลายที่ต้องการ เช่น &ldquo;ลายนครธรรม ลายดอกจันทร์ ลายตะเพียน&rdquo;</label>
 									<Textarea
 										value={prompt}
 										onChange={(e) => handlePromptChange(e.target.value)}
-										placeholder="อธิบายลายที่ต้องการ เช่น ลายครองรม ลายดอกจันทร์ ลายตะพาบิน"
+										placeholder="ลายนครธรรม ลายดอกจันทร์ ลายตะเพียน"
 										className="min-h-[120px] resize-none text-gray-700"
 										disabled={isGenerating}
 									/>

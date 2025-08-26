@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, Filter, Grid, List, SlidersHorizontal, Heart, Eye, Sparkles, ArrowRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -235,7 +235,7 @@ const GalleryCard: React.FC<GalleryCardProps> = ({ item, onCardClick, viewMode }
 };
 
 // Main Gallery Page Component
-const KramGalleryPage: React.FC = () => {
+const KramGalleryPageComponent: React.FC = () => {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 
@@ -609,6 +609,14 @@ const KramGalleryPage: React.FC = () => {
 			</div>
 		</div>
 	);
+};
+
+const KramGalleryPage = () => {
+    return (
+        <Suspense fallback={<div>Loading gallery...</div>}>
+            <KramGalleryPageComponent />
+        </Suspense>
+    );
 };
 
 export default KramGalleryPage;

@@ -31,13 +31,13 @@ export default function RootLayout({
 						<div className="flex items-center justify-between">
 							<h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Kram</h1>
 							<nav className="hidden md:flex space-x-8 text-gray-600">
-								<Link href="#" className="hover:text-blue-600 transition-colors">
+								<Link href="/" className="hover:text-blue-600 transition-colors">
 									หน้าแรก
 								</Link>
-								<Link href="#" className="hover:text-blue-600 transition-colors">
+								<Link href="/generate" className="hover:text-blue-600 transition-colors">
 									สร้างลายผ้า
 								</Link>
-								<Link href="#" className="hover:text-blue-600 transition-colors">
+								<Link href="/gallery" className="hover:text-blue-600 transition-colors">
 									Gallery
 								</Link>
 							</nav>

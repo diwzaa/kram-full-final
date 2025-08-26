@@ -192,7 +192,7 @@ const KramHomePage: React.FC = () => {
 		if (!searchQuery.trim()) return;
 
 		// Route to search page with query
-		router.push(`/gallery/search?q=${encodeURIComponent(searchQuery.trim())}`);
+		router.push(`/gallery?search=${encodeURIComponent(searchQuery.trim())}`);
 	};
 
 	const handleKeyPress = (e: React.KeyboardEvent) => {

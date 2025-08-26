@@ -322,11 +322,11 @@ const KramGeneratePage: React.FC = () => {
 							<CardContent className="p-6">
 								{/* Main Prompt */}
 								<div className="mb-6">
-									<label className="block text-sm font-medium text-gray-700 mb-2">อธิบายลายที่ต้องการ เช่น &ldquo;ลายขดน้ำครองเป็น ลายมอกอินขับของงคลามวขาวดูอยความคาดราม&rdquo;</label>
+									<label className="block text-sm font-medium text-gray-700 mb-2">อธิบายลายที่ต้องการ</label>
 									<Textarea
 										value={prompt}
 										onChange={(e) => setPrompt(e.target.value)}
-										placeholder="อธิบายลายที่ต้องการ เช่น ลายขครองรม ลายดอกจันตร์ ลายตะพาบิน"
+										placeholder="อธิบายลายที่ต้องการ เช่น อธิบายลายที่ต้องการ เช่น ลายนครธรรม ลายดอกจันทร์ ลายตะเพียน"
 										className="min-h-[120px] resize-none text-gray-700"
 										disabled={isGenerating}
 									/>

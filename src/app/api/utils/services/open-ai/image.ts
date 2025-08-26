@@ -36,29 +36,53 @@ const HD_IMAGE_CONFIG = {
 
 // Template for Kram-specific enhanced prompts
 const KRAM_PROMPT_TEMPLATE =
-  `A flat 2D pattern inspired by traditional Thai indigo textile (ผ้าครามพื้นเมือง), shown in the style of counted-thread embroidery or cross-stitch chart. The design should consist of repeating geometric folk motifs. The layout must be symmetrical, pixel-perfect, and arranged on a precise square grid. The appearance should be flat, digital, and sharp-edged, resembling a cross-stitch embroidery guide rather than real fabric texture.
+	`Create a traditional Thai indigo textile pattern (ผ้าคราม) in cross-stitch chart style, inspired by authentic mat-mi ikat technique from northeastern Thailand (Isan region).
 
-Use a limited color palette of deep indigo blue (คราม) and white background for contrast. Avoid gradients, shadows, folds, or realistic cloth rendering. Focus only on the geometric motif structure.
-
-The embroidery pattern {user_prompt}
+CULTURAL CONTEXT: Traditional {pattern_type} motif representing {symbolic_meaning}
+PATTERN TYPE: {user_prompt}
 
 {tag_context}
 
-Technical requirements:
-- Traditional indigo folk motifs (ผ้าคราม style)
-- Symmetrical, repeating layout
-- Limited solid colors: deep indigo, white
-- Sharp, clean edges with no blurring or shading
-- Flat 2D pattern (not realistic fabric)
-- {style_guidance}` as const;
+AUTHENTIC DESIGN ELEMENTS:
+- Traditional geometric motifs: PhumKaoBin lattice (rice ears), Dok Kaew (jasmine), Nak dragon, or Kranok flame patterns
+- Mat-mi ikat resist-dye aesthetic with characteristic "blurred edge" transitions
+- Symmetrical, repeating geometric layout suitable for traditional hand-weaving
+- Sacred Buddhist and prosperity symbolism appropriate for Thai cultural context
 
+COLOR PALETTE (Authentic Thai Indigo):
+- Deep indigo blue (คราม): Navy to royal blue tones from natural Indigofera tinctoria
+- Traditional white: Clean resist-dye pattern areas, never pure white but cream-tinted
+- Subtle gradations: Multiple indigo depths from 3-40 dye bath variations
+- Optional traditional accents: Muted red or gold details painted into white spaces (used sparingly)
 
+CROSS-STITCH TECHNICAL REQUIREMENTS:
+- Perfect pixel grid alignment on square pattern repeat
+- Clean, sharp-edged geometric forms (no anti-aliasing or blur)
+- Grid-countable squares suitable for 14-16 count Aida fabric
+- Symbol chart compatible with clear contrast between pattern and background
+- Seamless repeat pattern suitable for larger textile projects
+- Maximum 30-50 distinct color values to avoid "confetti" stitching effect
 
+VISUAL STYLE:
+- Flat 2D pattern chart appearance, NOT realistic fabric texture
+- Digital cross-stitch pattern aesthetic with visible grid structure
+- Traditional textile proportions maintaining cultural authenticity
+- {style_guidance}
 
-// Style guidance mappings
+AVOID:
+- Modern geometric patterns without Thai cultural basis
+- Overly complex details that don't translate to cross-stitch grid
+- Bright or artificial colors not found in traditional indigo dyeing
+- Western or non-Thai cultural motifs
+- 3D effects, shadows, or realistic fabric rendering
+- Random or non-meaningful pattern arrangements
+
+Pattern concept: {user_prompt}` as const;
+
+// Enhanced style guidance mappings for Thai indigo authenticity
 const STYLE_GUIDANCE: Record<string, string> = {
-	vivid: 'Bold color contrast with sharp geometric definition, vibrant reds and deep blues creating striking diamond and chevron patterns',
-	natural: 'Subtle color variations with traditional folk art styling, authentic handwoven texture with slight irregularities that add character',
+	vivid: 'Bold traditional contrast between deep indigo and white resist areas, emphasizing sacred Buddhist symbolism and prosperity motifs with dramatic cultural impact',
+	natural: 'Subtle indigo variations mimicking traditional multiple-dip dyeing techniques, organic mat-mi ikat blurred edges, authentic hand-woven textile aesthetic',
 } as const;
 
 /**

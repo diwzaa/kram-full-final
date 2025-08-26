@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { X, ArrowLeft, Sparkles, Image as ImageIcon, Loader2, Download, Heart, Eye } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -269,7 +269,7 @@ const getInitialStateFromURL = (searchParams: URLSearchParams | null) => {
 };
 
 // Main Generate Page Component
-const KramGeneratePage: React.FC = () => {
+const KramGeneratePageComponent: React.FC = () => {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 
@@ -626,6 +626,14 @@ const KramGeneratePage: React.FC = () => {
 			</div>
 		</div>
 	);
+};
+
+const KramGeneratePage = () => {
+    return (
+        <Suspense fallback={<div>Loading gallery...</div>}>
+            <KramGeneratePageComponent />
+        </Suspense>
+    );
 };
 
 export default KramGeneratePage;

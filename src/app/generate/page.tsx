@@ -214,7 +214,7 @@ const GeneratedResultCard: React.FC<GeneratedResultProps> = ({ result, prompt, o
 					</Button>
 					{onSave && (
 						<Button onClick={onSave} size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700">
-							บันทึก
+							ดูรายละเอียด
 						</Button>
 					)}
 				</div>

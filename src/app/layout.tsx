@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Link from "next/link";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,12 +24,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
-      </body>
-    </html>
+		<html lang="en">
+			<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+				<header className="bg-white/80 backdrop-blur-sm border-b border-white/20 sticky top-0 z-50">
+					<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+						<div className="flex items-center justify-between">
+							<h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Kram</h1>
+							<nav className="hidden md:flex space-x-8 text-gray-600">
+								<Link href="#" className="hover:text-blue-600 transition-colors">
+									หน้าแรก
+								</Link>
+								<Link href="#" className="hover:text-blue-600 transition-colors">
+									สร้างลายผ้า
+								</Link>
+								<Link href="#" className="hover:text-blue-600 transition-colors">
+									Gallery
+								</Link>
+							</nav>
+						</div>
+					</div>
+				</header>
+				{children}
+			</body>
+		</html>
   );
 }

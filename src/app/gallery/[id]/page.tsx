@@ -277,10 +277,10 @@ const KramGalleryDetailPage: React.FC = () => {
 							<h1 className="text-xl font-semibold text-gray-900">รายละเอียดลายผ้าคราม</h1>
 						</div>
 						<div className="flex items-center space-x-2">
-							<Button variant="ghost" size="sm" onClick={handleLikeToggle} className="text-gray-600 hover:text-red-600">
+							{/* <Button variant="ghost" size="sm" onClick={handleLikeToggle} className="text-gray-600 hover:text-red-600">
 								<Heart className={cn('w-5 h-5 mr-1 transition-colors', isLiked ? 'fill-red-500 text-red-500' : 'text-gray-600')} />
 								{likeCount}
-							</Button>
+							</Button> */}
 							<Button variant="ghost" size="sm" onClick={handleShare} className="text-gray-600 hover:text-blue-600">
 								<Share2 className="w-5 h-5 mr-1" />
 								แชร์
@@ -298,7 +298,7 @@ const KramGalleryDetailPage: React.FC = () => {
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 					{/* Left Column - Image */}
 					<div className="space-y-4">
-						<Card className="overflow-hidden bg-white shadow-lg">
+						<Card className="overflow-hidden bg-white shadow-lg p-0">
 							<div className="relative aspect-square">
 								{mainImage?.prompt_image_url ? (
 									<ImageWithFallback src={mainImage.prompt_image_url} alt={galleryItem.prompt_message || 'ลายผ้าคราม'} className="w-full h-full" />
@@ -313,9 +313,9 @@ const KramGalleryDetailPage: React.FC = () => {
 
 								{/* Overlay Actions */}
 								<div className="absolute top-4 right-4 flex space-x-2">
-									<Button variant="ghost" size="sm" className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white" onClick={handleLikeToggle}>
+									{/* <Button variant="ghost" size="sm" className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white" onClick={handleLikeToggle}>
 										<Heart className={cn('w-5 h-5 transition-colors', isLiked ? 'fill-red-500 text-red-500' : 'text-white')} />
-									</Button>
+									</Button> */}
 									<Button variant="ghost" size="sm" className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white" onClick={handleDownload}>
 										<Download className="w-5 h-5" />
 									</Button>
@@ -348,7 +348,7 @@ const KramGalleryDetailPage: React.FC = () => {
 					{/* Right Column - Details */}
 					<div className="space-y-6">
 						{/* Title and Description */}
-						<Card className="bg-white shadow-sm">
+						<Card className="bg-white shadow-sm p-0">
 							<CardContent className="p-6">
 								<h1 className="text-2xl font-bold text-gray-900 mb-4 leading-tight">{galleryItem.prompt_message || 'ลายผ้าคราม AI'}</h1>
 
@@ -360,7 +360,7 @@ const KramGalleryDetailPage: React.FC = () => {
 								)}
 
 								{/* Stats */}
-								<div className="flex items-center space-x-6 text-sm text-gray-500 mb-6">
+								{/* <div className="flex items-center space-x-6 text-sm text-gray-500 mb-6">
 									<div className="flex items-center space-x-1">
 										<Heart className={cn('w-4 h-4', isLiked ? 'text-red-500' : '')} />
 										<span>{likeCount} ถูกใจ</span>
@@ -379,7 +379,7 @@ const KramGalleryDetailPage: React.FC = () => {
 											})}
 										</span>
 									</div>
-								</div>
+								</div> */}
 
 								<Separator className="my-6" />
 

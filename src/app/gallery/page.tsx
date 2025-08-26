@@ -79,7 +79,9 @@ const GalleryCard: React.FC<GalleryCardProps> = ({ item, onCardClick, viewMode }
 						{/* Image */}
 						<div className="flex-shrink-0 w-32 h-32 bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 rounded-xl overflow-hidden">
 							{mainImage?.prompt_image_url ? (
-								<img
+								<Image
+									width={600}
+									height={600}
 									src={mainImage.prompt_image_url}
 									alt={item.prompt_message}
 									className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
@@ -102,9 +104,9 @@ const GalleryCard: React.FC<GalleryCardProps> = ({ item, onCardClick, viewMode }
 									<p className="text-sm text-gray-600 mb-4 line-clamp-2">{mainImage?.description || 'ลวดลายผ้าครามที่สร้างด้วย AI ที่มีเอกลักษณ์และความสวยงาม'}</p>
 								</div>
 
-								<Button variant="ghost" size="sm" className="ml-4" onClick={handleLikeClick}>
+								{/* <Button variant="ghost" size="sm" className="ml-4" onClick={handleLikeClick}>
 									<Heart className={cn('w-5 h-5 transition-colors', isLiked ? 'fill-red-500 text-red-500' : 'text-gray-400')} />
-								</Button>
+								</Button> */}
 							</div>
 
 							{/* Tags */}
@@ -128,14 +130,14 @@ const GalleryCard: React.FC<GalleryCardProps> = ({ item, onCardClick, viewMode }
 
 							<div className="flex items-center justify-between">
 								<div className="flex items-center space-x-6 text-sm text-gray-500">
-									<div className="flex items-center space-x-1">
+									{/* <div className="flex items-center space-x-1">
 										<Heart className={cn('w-4 h-4', isLiked ? 'text-red-500' : '')} />
 										<span>{Math.floor(Math.random() * 50) + (isLiked ? 11 : 10)}</span>
 									</div>
 									<div className="flex items-center space-x-1">
 										<Eye className="w-4 h-4" />
 										<span>{viewCount.toLocaleString()}</span>
-									</div>
+									</div> */}
 									<span className="text-xs">
 										{new Date(item.create_at).toLocaleDateString('th-TH', {
 											year: 'numeric',
@@ -162,8 +164,8 @@ const GalleryCard: React.FC<GalleryCardProps> = ({ item, onCardClick, viewMode }
 			<div className="relative aspect-square overflow-hidden bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500">
 				{mainImage?.prompt_image_url ? (
 					<Image
-                        width={600}
-                        height={800}
+						width={600}
+						height={800}
 						src={mainImage.prompt_image_url}
 						alt={item.prompt_message}
 						className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"

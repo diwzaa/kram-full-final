@@ -1,15 +1,64 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { X, ArrowLeft, Sparkles, Image as ImageIcon, Loader2, Download, Heart, Eye } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
+
+// Type definitions
+interface TagResponse {
+	id: string;
+	image_url: string;
+	name: string;
+	description: string;
+}
+
+interface ApiResponse<T> {
+	success: boolean;
+	data?: T;
+	error?: string;
+	message?: string;
+}
+
+interface KramPatternRequest {
+	prompt: string;
+	tag_ids?: string[];
+	dalle_options?: {
+		size?: '1024x1024' | '1792x1024' | '1024x1792';
+		quality?: 'standard' | 'hd';
+		style?: 'vivid' | 'natural';
+	};
+	chat_options?: {
+		model?: 'gpt-4' | 'gpt-4-turbo' | 'gpt-3.5-turbo';
+		max_tokens?: number;
+	};
+}
+
+interface GeneratedResult {
+	id: string;
+	image_url: string;
+	description: string;
+	output_tags: string;
+}
+
+interface KramPatternResponse {
+	history_id: string;
+	prompt_message: string;
+	selected_tags: Array<{
+		id: string;
+		name: string;
+		description: string;
+	}>;
+	generated_outputs: GeneratedResult[];
+	created_at: string;
+}
 
 // API Functions
 async function fetchTags(): Promise<ApiResponse<TagResponse[]>> {
@@ -113,11 +162,11 @@ const GeneratedResultCard: React.FC<GeneratedResultProps> = ({ result, prompt, o
 			<div className="relative aspect-square bg-gray-100">
 				{result.image_url ? (
 					<Image
+						width={600}
+						height={800}
 						src={result.image_url}
 						alt={prompt}
 						className="w-full h-full object-cover"
-                        width={600}
-                        height={800}
 						onError={(e) => {
 							(e.target as HTMLImageElement).src = '/placeholder-image.png';
 						}}
@@ -131,9 +180,6 @@ const GeneratedResultCard: React.FC<GeneratedResultProps> = ({ result, prompt, o
 
 				{/* Action buttons */}
 				<div className="absolute top-3 right-3 flex space-x-2">
-					{/* <Button variant="ghost" size="sm" className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-2 h-auto" onClick={() => setIsLiked(!isLiked)}>
-						<Heart className={cn('w-4 h-4 transition-colors', isLiked ? 'fill-red-500 text-red-500' : 'text-white')} />
-					</Button> */}
 					{onDownload && (
 						<Button variant="ghost" size="sm" className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-2 h-auto" onClick={onDownload}>
 							<Download className="w-4 h-4" />
@@ -161,21 +207,6 @@ const GeneratedResultCard: React.FC<GeneratedResultProps> = ({ result, prompt, o
 					)}
 				</div>
 
-				{/* Stats */}
-				{/* <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-					<div className="flex items-center space-x-4">
-						<div className="flex items-center space-x-1">
-							<Heart className={cn('w-4 h-4', isLiked ? 'text-red-500' : '')} />
-							<span>{Math.floor(Math.random() * 20) + (isLiked ? 6 : 5)}</span>
-						</div>
-						<div className="flex items-center space-x-1">
-							<Eye className="w-4 h-4" />
-							<span>{Math.floor(Math.random() * 100) + 10}</span>
-						</div>
-					</div>
-					<span className="text-xs">เมื่อสักครู่</span>
-				</div> */}
-
 				{/* Action Buttons */}
 				<div className="flex space-x-2">
 					<Button variant="outline" size="sm" className="flex-1">
@@ -192,9 +223,55 @@ const GeneratedResultCard: React.FC<GeneratedResultProps> = ({ result, prompt, o
 	);
 };
 
+// URL Parameter Utilities
+const updateURLParams = (params: Record<string, string | null>) => {
+	if (typeof window === 'undefined') return;
+
+	const url = new URL(window.location.href);
+
+	Object.entries(params).forEach(([key, value]) => {
+		if (value === null || value === '') {
+			url.searchParams.delete(key);
+		} else {
+			url.searchParams.set(key, value);
+		}
+	});
+
+	// Update URL without page reload
+	window.history.replaceState({}, '', url.toString());
+};
+
+const getInitialStateFromURL = (searchParams: URLSearchParams | null) => {
+	if (!searchParams) {
+		return {
+			prompt: '',
+			tags: [],
+			size: '1024x1024' as const,
+			quality: 'standard' as const,
+			style: 'vivid' as const,
+		};
+	}
+
+	// Properly decode URL-encoded parameters
+	const prompt = searchParams.get('prompt');
+	const decodedPrompt = prompt ? decodeURIComponent(prompt) : '';
+
+	const tags = searchParams.get('tags');
+	const decodedTags = tags ? tags.split(',').filter(Boolean) : [];
+
+	return {
+		prompt: decodedPrompt,
+		tags: decodedTags,
+		size: (searchParams.get('size') as '1024x1024' | '1792x1024' | '1024x1792') || '1024x1024',
+		quality: (searchParams.get('quality') as 'standard' | 'hd') || 'standard',
+		style: (searchParams.get('style') as 'vivid' | 'natural') || 'vivid',
+	};
+};
+
 // Main Generate Page Component
 const KramGeneratePage: React.FC = () => {
 	const router = useRouter();
+	const searchParams = useSearchParams();
 
 	// State
 	const [prompt, setPrompt] = useState('');
@@ -210,11 +287,76 @@ const KramGeneratePage: React.FC = () => {
 	const [generatedResults, setGeneratedResults] = useState<GeneratedResult[]>([]);
 	const [error, setError] = useState<string | null>(null);
 	const [currentHistoryId, setCurrentHistoryId] = useState<string | null>(null);
+	const [isInitialized, setIsInitialized] = useState(false);
+
+	// Initialize state from URL parameters
+	useEffect(() => {
+		const initializeFromURL = () => {
+			try {
+				const initialState = getInitialStateFromURL(searchParams);
+
+				console.log('Initializing from URL:', {
+					searchParams: searchParams?.toString(),
+					initialState,
+				});
+
+				if (initialState.prompt) {
+					setPrompt(initialState.prompt);
+				}
+
+				if (initialState.tags.length > 0) {
+					setSelectedTags(initialState.tags);
+				}
+
+				setImageSize(initialState.size);
+				setImageQuality(initialState.quality);
+				setImageStyle(initialState.style);
+			} catch (error) {
+				console.error('Error initializing from URL:', error);
+			} finally {
+				setIsInitialized(true);
+			}
+		};
+
+		if (searchParams && !isInitialized) {
+			initializeFromURL();
+		} else if (!searchParams && !isInitialized) {
+			// If no search params, still mark as initialized
+			setIsInitialized(true);
+		}
+	}, [searchParams, isInitialized]);
 
 	// Load tags on component mount
 	useEffect(() => {
 		loadTags();
 	}, []);
+
+	// Update URL when state changes (debounced)
+	useEffect(() => {
+		if (!isInitialized) return;
+
+		const timeoutId = setTimeout(() => {
+			updateURLParams({
+				prompt: prompt.trim() || null,
+				tags: selectedTags.length > 0 ? selectedTags.join(',') : null,
+				size: imageSize !== '1024x1024' ? imageSize : null,
+				quality: imageQuality !== 'standard' ? imageQuality : null,
+				style: imageStyle !== 'vivid' ? imageStyle : null,
+			});
+		}, 500);
+
+		return () => clearTimeout(timeoutId);
+	}, [prompt, selectedTags, imageSize, imageQuality, imageStyle, isInitialized]);
+
+	// Debug effect to log current state
+	useEffect(() => {
+		console.log('Current state:', {
+			prompt,
+			selectedTags,
+			isInitialized,
+			searchParamsString: searchParams?.toString(),
+		});
+	}, [prompt, selectedTags, isInitialized, searchParams]);
 
 	const loadTags = async () => {
 		try {
@@ -229,6 +371,10 @@ const KramGeneratePage: React.FC = () => {
 		}
 	};
 
+	const handlePromptChange = (value: string) => {
+		setPrompt(value);
+	};
+
 	const handleTagToggle = (tagId: string) => {
 		setSelectedTags((prev) => {
 			if (prev.includes(tagId)) {
@@ -238,6 +384,18 @@ const KramGeneratePage: React.FC = () => {
 			}
 			return prev;
 		});
+	};
+
+	const handleSizeChange = (value: '1024x1024' | '1792x1024' | '1024x1792') => {
+		setImageSize(value);
+	};
+
+	const handleQualityChange = (value: 'standard' | 'hd') => {
+		setImageQuality(value);
+	};
+
+	const handleStyleChange = (value: 'vivid' | 'natural') => {
+		setImageStyle(value);
 	};
 
 	const handleGenerate = async () => {
@@ -259,7 +417,7 @@ const KramGeneratePage: React.FC = () => {
 				}
 				return prev + Math.random() * 15;
 			});
-		}, 1000);
+		}, 2000);
 
 		try {
 			const request: KramPatternRequest = {
@@ -311,22 +469,43 @@ const KramGeneratePage: React.FC = () => {
 		document.body.removeChild(link);
 	};
 
+	const handleClearForm = () => {
+		setPrompt('');
+		setSelectedTags([]);
+		setImageSize('1024x1024');
+		setImageQuality('standard');
+		setImageStyle('vivid');
+		setGeneratedResults([]);
+		setError(null);
+		setCurrentHistoryId(null);
+	};
+
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-			
 			<div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 					{/* Left Column - Form */}
 					<div className="space-y-6">
 						<Card className="bg-white/80 backdrop-blur-sm border-white/40">
 							<CardContent className="p-6">
+								{/* Header with Clear Button */}
+								<div className="flex justify-between items-center mb-6">
+									<h2 className="text-xl font-bold text-gray-800">สร้างลายด้วย AI</h2>
+									{(prompt || selectedTags.length > 0) && (
+										<Button variant="ghost" size="sm" onClick={handleClearForm} className="text-gray-500 hover:text-gray-700">
+											<X className="w-4 h-4 mr-1" />
+											เคลียร์
+										</Button>
+									)}
+								</div>
+
 								{/* Main Prompt */}
 								<div className="mb-6">
-									<label className="block text-sm font-medium text-gray-700 mb-2">อธิบายลายที่ต้องการ</label>
+									<label className="block text-sm font-medium text-gray-700 mb-2">อธิบายลายที่ต้องการ เช่น &ldquo;ลายครองเป็น ลายดอกไผ่ ลายมังกรทองคำ&rdquo;</label>
 									<Textarea
 										value={prompt}
-										onChange={(e) => setPrompt(e.target.value)}
-										placeholder="อธิบายลายที่ต้องการ เช่น อธิบายลายที่ต้องการ เช่น ลายนครธรรม ลายดอกจันทร์ ลายตะเพียน"
+										onChange={(e) => handlePromptChange(e.target.value)}
+										placeholder="อธิบายลายที่ต้องการ เช่น ลายครองรม ลายดอกจันทร์ ลายตะพาบิน"
 										className="min-h-[120px] resize-none text-gray-700"
 										disabled={isGenerating}
 									/>
@@ -343,7 +522,7 @@ const KramGeneratePage: React.FC = () => {
 								<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
 									<div>
 										<label className="block text-sm font-medium text-gray-700 mb-1">ขนาดภาพ</label>
-										<Select value={imageSize} onValueChange={(value: any) => setImageSize(value)}>
+										<Select value={imageSize} onValueChange={handleSizeChange}>
 											<SelectTrigger disabled={isGenerating}>
 												<SelectValue />
 											</SelectTrigger>
@@ -357,7 +536,7 @@ const KramGeneratePage: React.FC = () => {
 
 									<div>
 										<label className="block text-sm font-medium text-gray-700 mb-1">คุณภาพ</label>
-										<Select value={imageQuality} onValueChange={(value: any) => setImageQuality(value)}>
+										<Select value={imageQuality} onValueChange={handleQualityChange}>
 											<SelectTrigger disabled={isGenerating}>
 												<SelectValue />
 											</SelectTrigger>
@@ -368,9 +547,9 @@ const KramGeneratePage: React.FC = () => {
 										</Select>
 									</div>
 
-									<div>
+									<div className="sm:col-span-2">
 										<label className="block text-sm font-medium text-gray-700 mb-1">สไตล์</label>
-										<Select value={imageStyle} onValueChange={(value: any) => setImageStyle(value)}>
+										<Select value={imageStyle} onValueChange={handleStyleChange}>
 											<SelectTrigger disabled={isGenerating}>
 												<SelectValue />
 											</SelectTrigger>

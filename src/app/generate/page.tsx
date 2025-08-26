@@ -9,10 +9,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
-// Type definitions
+// Types
 interface TagResponse {
 	id: string;
 	image_url: string;
@@ -41,13 +42,6 @@ interface KramPatternRequest {
 	};
 }
 
-interface GeneratedResult {
-	id: string;
-	image_url: string;
-	description: string;
-	output_tags: string;
-}
-
 interface KramPatternResponse {
 	history_id: string;
 	prompt_message: string;
@@ -56,9 +50,31 @@ interface KramPatternResponse {
 		name: string;
 		description: string;
 	}>;
-	generated_outputs: GeneratedResult[];
+	generated_outputs: Array<{
+		id: string;
+		image_url: string;
+		description: string;
+		output_tags: string;
+	}>;
 	created_at: string;
 }
+
+interface GeneratedResult {
+	id: string;
+	image_url: string;
+	description: string;
+	output_tags: string;
+}
+
+// Utility Functions
+const isValidUUID = (str: string): boolean => {
+	const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+	return uuidRegex.test(str);
+};
+
+const filterValidTagIds = (tagIds: string[]): string[] => {
+	return tagIds.filter((id) => isValidUUID(id));
+};
 
 // API Functions
 async function fetchTags(): Promise<ApiResponse<TagResponse[]>> {
@@ -77,7 +93,6 @@ async function fetchTags(): Promise<ApiResponse<TagResponse[]>> {
 		const data: ApiResponse<TagResponse[]> = await response.json();
 		return data;
 	} catch (error) {
-		console.error('Error fetching tags:', error);
 		return {
 			success: false,
 			error: 'Failed to fetch tags',
@@ -103,7 +118,6 @@ async function generateKramPattern(request: KramPatternRequest): Promise<ApiResp
 		const data: ApiResponse<KramPatternResponse> = await response.json();
 		return data;
 	} catch (error) {
-		console.error('Error generating pattern:', error);
 		return {
 			success: false,
 			error: 'Failed to generate pattern',
@@ -121,26 +135,127 @@ interface TagSelectorProps {
 }
 
 const TagSelector: React.FC<TagSelectorProps> = ({ tags, selectedTags, onTagToggle, maxTags = 5 }) => {
+	const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+
+	const handleImageError = (tagId: string) => {
+		setImageErrors((prev) => new Set([...prev, tagId]));
+	};
+
+	const handleImageLoad = (tagId: string) => {
+		setImageErrors((prev) => {
+			const newSet = new Set(prev);
+			newSet.delete(tagId);
+			return newSet;
+		});
+	};
+
+	const validSelectedTags = selectedTags.filter((tagId) => {
+		const isValid = isValidUUID(tagId);
+		const tagExists = tags.some((tag) => tag.id === tagId);
+		return isValid && tagExists;
+	});
+
 	return (
 		<div>
-			<label className="block text-sm font-medium text-gray-700 mb-3">ตัวอย่าง Prompt:</label>
-			<div className="flex flex-wrap gap-2">
-				{tags.map((tag) => (
-					<Button
-						key={tag.id}
-						variant={selectedTags.includes(tag.id) ? 'default' : 'outline'}
-						size="sm"
-						onClick={() => onTagToggle(tag.id)}
-						disabled={!selectedTags.includes(tag.id) && selectedTags.length >= maxTags}
-						className={cn('transition-all duration-200', selectedTags.includes(tag.id) ? 'bg-blue-600 text-white hover:bg-blue-700' : 'hover:bg-gray-50')}
-					>
-						{tag.name}
-					</Button>
-				))}
+			<label className="block text-sm font-medium text-gray-700 mb-3">องค์ประกอบเพิ่มเติม:</label>
+            <span className="text-xs text-gray-500"><span className="text-red">*</span> องค์ประกอบเป็นเพียงตัวช่วยในการสร้างลวดลายผ้าคราม AI ภาพที่ได้อาจไม่ตรงตามที่เห็น</span>
+			<TooltipProvider>
+				<div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+					{tags.map((tag) => {
+						const isSelected = validSelectedTags.includes(tag.id);
+						const isDisabled = !isSelected && validSelectedTags.length >= maxTags;
+						const hasImageError = imageErrors.has(tag.id);
+
+						return (
+							<Tooltip key={tag.id}>
+								<TooltipTrigger asChild>
+									<div
+										className={cn('relative cursor-pointer transition-all duration-200 transform hover:scale-105', isDisabled && 'cursor-not-allowed opacity-50')}
+										onClick={() => !isDisabled && onTagToggle(tag.id)}
+									>
+										<Card
+											className={cn(
+												'overflow-hidden border-2 transition-all duration-200 p-0 w-10 h-10',
+												isSelected ? 'border-blue-500 bg-blue-50 shadow-md ring-2 ring-blue-200' : 'border-gray-200 hover:border-gray-300 hover:shadow-sm',
+												isDisabled && 'hover:border-gray-200 hover:shadow-none',
+											)}
+										>
+											<CardContent className="p-0">
+												<div className="relative aspect-square bg-gray-100 overflow-hidden">
+													{!hasImageError ? (
+														<Image
+															src={tag.image_url}
+															alt={tag.name}
+															width={20}
+															height={20}
+															className="w-full h-full object-cover"
+															onError={() => handleImageError(tag.id)}
+															onLoad={() => handleImageLoad(tag.id)}
+														/>
+													) : (
+														<div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100">
+															<ImageIcon className="w-8 h-8" />
+														</div>
+													)}
+
+													{isSelected && (
+														<div className="absolute inset-0 bg-blue-600/20 flex items-center justify-center">
+															<div className="bg-blue-600 text-white rounded-full p-1">
+																<svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+																	<path
+																		fillRule="evenodd"
+																		d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+																		clipRule="evenodd"
+																	/>
+																</svg>
+															</div>
+														</div>
+													)}
+												</div>
+											</CardContent>
+										</Card>
+									</div>
+								</TooltipTrigger>
+								<TooltipContent>
+									<p>{tag.name}</p>
+								</TooltipContent>
+							</Tooltip>
+						);
+					})}
+				</div>
+			</TooltipProvider>
+
+			<div className="flex justify-between items-center mt-4">
+				<p className="text-xs text-gray-500">
+					เลือกได้สูงสุด {maxTags} แท็ก ({validSelectedTags.length}/{maxTags})
+				</p>
+
+				{validSelectedTags.length > 0 && (
+					<div className="flex flex-wrap gap-1 max-w-xs">
+						{validSelectedTags.slice(0, 3).map((tagId) => {
+							const tag = tags.find((t) => t.id === tagId);
+							return tag ? (
+								<Badge key={tagId} variant="default" className="text-xs px-2 py-1 bg-blue-100 text-blue-700">
+									{tag.name}
+								</Badge>
+							) : null;
+						})}
+						{validSelectedTags.length > 3 && (
+							<Badge variant="outline" className="text-xs px-2 py-1">
+								+{validSelectedTags.length - 3}
+							</Badge>
+						)}
+					</div>
+				)}
 			</div>
-			<p className="text-xs text-gray-500 mt-2">
-				เลือกได้สูงสุด {maxTags} แท็ก ({selectedTags.length}/{maxTags})
-			</p>
+
+			{validSelectedTags.length > 0 && (
+				<div className="mt-2">
+					<Button variant="ghost" size="sm" onClick={() => validSelectedTags.forEach((tagId) => onTagToggle(tagId))} className="text-xs text-gray-500 hover:text-gray-700 p-1 h-auto">
+						เคลียร์แท็กที่เลือก
+					</Button>
+				</div>
+			)}
 		</div>
 	);
 };
@@ -154,7 +269,6 @@ interface GeneratedResultProps {
 }
 
 const GeneratedResultCard: React.FC<GeneratedResultProps> = ({ result, prompt, onSave, onDownload }) => {
-	const [isLiked, setIsLiked] = useState(false);
 	const outputTags = result.output_tags.split(',').map((tag) => tag.trim());
 
 	return (
@@ -178,7 +292,6 @@ const GeneratedResultCard: React.FC<GeneratedResultProps> = ({ result, prompt, o
 					</div>
 				)}
 
-				{/* Action buttons */}
 				<div className="absolute top-3 right-3 flex space-x-2">
 					{onDownload && (
 						<Button variant="ghost" size="sm" className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white p-2 h-auto" onClick={onDownload}>
@@ -190,10 +303,8 @@ const GeneratedResultCard: React.FC<GeneratedResultProps> = ({ result, prompt, o
 
 			<CardContent className="p-4">
 				<h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">{prompt}</h3>
-
 				<p className="text-sm text-gray-600 mb-3 line-clamp-3">{result.description}</p>
 
-				{/* Output Tags */}
 				<div className="flex flex-wrap gap-1 mb-4">
 					{outputTags.slice(0, 4).map((tag, index) => (
 						<Badge key={index} variant="outline" className="text-xs px-2 py-1">
@@ -207,7 +318,6 @@ const GeneratedResultCard: React.FC<GeneratedResultProps> = ({ result, prompt, o
 					)}
 				</div>
 
-				{/* Action Buttons */}
 				<div className="flex space-x-2">
 					<Button variant="outline" size="sm" className="flex-1">
 						แชร์
@@ -228,7 +338,6 @@ const updateURLParams = (params: Record<string, string | null>) => {
 	if (typeof window === 'undefined') return;
 
 	const url = new URL(window.location.href);
-
 	Object.entries(params).forEach(([key, value]) => {
 		if (value === null || value === '') {
 			url.searchParams.delete(key);
@@ -237,7 +346,6 @@ const updateURLParams = (params: Record<string, string | null>) => {
 		}
 	});
 
-	// Update URL without page reload
 	window.history.replaceState({}, '', url.toString());
 };
 
@@ -252,12 +360,11 @@ const getInitialStateFromURL = (searchParams: URLSearchParams | null) => {
 		};
 	}
 
-	// Properly decode URL-encoded parameters
 	const prompt = searchParams.get('prompt');
 	const decodedPrompt = prompt ? decodeURIComponent(prompt) : '';
 
 	const tags = searchParams.get('tags');
-	const decodedTags = tags ? tags.split(',').filter(Boolean) : [];
+	const decodedTags = tags ? filterValidTagIds(tags.split(',').filter(Boolean)) : [];
 
 	return {
 		prompt: decodedPrompt,
@@ -279,9 +386,7 @@ const KramGeneratePageComponent: React.FC = () => {
 	const [availableTags, setAvailableTags] = useState<TagResponse[]>([]);
 	const [imageSize, setImageSize] = useState<'1024x1024' | '1792x1024' | '1024x1792'>('1024x1024');
 	const [imageQuality, setImageQuality] = useState<'standard' | 'hd'>('standard');
-	const [imageStyle, setImageStyle] = useState<'vivid' | 'natural'>('vivid');
-
-	// Generation state
+	const [imageStyle, setImageStyle] = useState<'vivid' | 'natural'>('natural');
 	const [isGenerating, setIsGenerating] = useState(false);
 	const [generationProgress, setGenerationProgress] = useState(0);
 	const [generatedResults, setGeneratedResults] = useState<GeneratedResult[]>([]);
@@ -295,11 +400,6 @@ const KramGeneratePageComponent: React.FC = () => {
 			try {
 				const initialState = getInitialStateFromURL(searchParams);
 
-				console.log('Initializing from URL:', {
-					searchParams: searchParams?.toString(),
-					initialState,
-				});
-
 				if (initialState.prompt) {
 					setPrompt(initialState.prompt);
 				}
@@ -312,7 +412,7 @@ const KramGeneratePageComponent: React.FC = () => {
 				setImageQuality(initialState.quality);
 				setImageStyle(initialState.style);
 			} catch (error) {
-				console.error('Error initializing from URL:', error);
+				// Error handling without console log
 			} finally {
 				setIsInitialized(true);
 			}
@@ -321,7 +421,6 @@ const KramGeneratePageComponent: React.FC = () => {
 		if (searchParams && !isInitialized) {
 			initializeFromURL();
 		} else if (!searchParams && !isInitialized) {
-			// If no search params, still mark as initialized
 			setIsInitialized(true);
 		}
 	}, [searchParams, isInitialized]);
@@ -343,20 +442,10 @@ const KramGeneratePageComponent: React.FC = () => {
 				quality: imageQuality !== 'standard' ? imageQuality : null,
 				style: imageStyle !== 'vivid' ? imageStyle : null,
 			});
-		}, 500);
+		}, 200);
 
 		return () => clearTimeout(timeoutId);
 	}, [prompt, selectedTags, imageSize, imageQuality, imageStyle, isInitialized]);
-
-	// Debug effect to log current state
-	useEffect(() => {
-		console.log('Current state:', {
-			prompt,
-			selectedTags,
-			isInitialized,
-			searchParamsString: searchParams?.toString(),
-		});
-	}, [prompt, selectedTags, isInitialized, searchParams]);
 
 	const loadTags = async () => {
 		try {
@@ -376,6 +465,11 @@ const KramGeneratePageComponent: React.FC = () => {
 	};
 
 	const handleTagToggle = (tagId: string) => {
+		if (!isValidUUID(tagId)) {
+			setError(`Invalid tag ID: ${tagId}`);
+			return;
+		}
+
 		setSelectedTags((prev) => {
 			if (prev.includes(tagId)) {
 				return prev.filter((id) => id !== tagId);
@@ -408,7 +502,6 @@ const KramGeneratePageComponent: React.FC = () => {
 		setError(null);
 		setGenerationProgress(0);
 
-		// Simulate progress
 		const progressInterval = setInterval(() => {
 			setGenerationProgress((prev) => {
 				if (prev >= 90) {
@@ -420,9 +513,11 @@ const KramGeneratePageComponent: React.FC = () => {
 		}, 2000);
 
 		try {
+			const validTagIds = filterValidTagIds(selectedTags);
+
 			const request: KramPatternRequest = {
 				prompt: prompt.trim(),
-				tag_ids: selectedTags,
+				tag_ids: validTagIds,
 				dalle_options: {
 					size: imageSize,
 					quality: imageQuality,
@@ -430,7 +525,6 @@ const KramGeneratePageComponent: React.FC = () => {
 				},
 				chat_options: {
 					model: 'gpt-4-turbo',
-					max_tokens: 1000,
 				},
 			};
 
@@ -460,7 +554,6 @@ const KramGeneratePageComponent: React.FC = () => {
 	};
 
 	const handleDownloadResult = (result: GeneratedResult) => {
-		// Create download link
 		const link = document.createElement('a');
 		link.href = result.image_url;
 		link.download = `kram-pattern-${result.id}.png`;
@@ -554,8 +647,8 @@ const KramGeneratePageComponent: React.FC = () => {
 												<SelectValue />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="vivid">สีสันสดใส</SelectItem>
 												<SelectItem value="natural">เป็นธรรมชาติ</SelectItem>
+												<SelectItem value="vivid">สีสันสดใส</SelectItem>
 											</SelectContent>
 										</Select>
 									</div>
@@ -629,11 +722,11 @@ const KramGeneratePageComponent: React.FC = () => {
 };
 
 const KramGeneratePage = () => {
-    return (
-        <Suspense fallback={<div>Loading gallery...</div>}>
-            <KramGeneratePageComponent />
-        </Suspense>
-    );
+	return (
+		<Suspense fallback={<div>Loading...</div>}>
+			<KramGeneratePageComponent />
+		</Suspense>
+	);
 };
 
 export default KramGeneratePage;

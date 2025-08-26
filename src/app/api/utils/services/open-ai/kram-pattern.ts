@@ -1,16 +1,16 @@
-// Fixed Kram Pattern Helper with correct types
+// Updated Kram Pattern Helper with Image URL support
 import { imageHelper, ImageResult } from './image';
 import { chatHelper, generateImageDescription, generateOutputTags } from './chat';
 import { logger } from './open-ai';
 
-// Fixed types to match the API expectations
+// Updated types to include image_url
 export interface KramPatternRequest {
 	prompt: string;
 	tags?: Array<{
 		id: string;
 		name: string;
 		description: string;
-		image_url: string;
+		image_url: string; // Added image_url field
 	}>;
 	dalle_options?: {
 		size?: '1024x1024' | '1792x1024' | '1024x1792';
@@ -28,7 +28,6 @@ export interface KramPatternResult {
 	readonly description: string;
 	readonly output_tags: string;
 	readonly processing_time: number;
-	// Changed to mutable array to match API response type
 	selected_tags: Array<{
 		id: string;
 		name: string;
@@ -83,6 +82,12 @@ function validateKramRequest(request: KramPatternRequest): { valid: boolean; err
 		if (invalidTags.length > 0) {
 			errors.push('Invalid tag ID format');
 		}
+
+		// Validate that all tags have image_url
+		const tagsWithoutImages = request.tags.filter((tag) => !tag.image_url || tag.image_url.trim() === '');
+		if (tagsWithoutImages.length > 0) {
+			errors.push(`Tags missing image URLs: ${tagsWithoutImages.map((t) => t.name).join(', ')}`);
+		}
 	}
 
 	// Validate DALL-E options
@@ -119,20 +124,27 @@ function validateKramRequest(request: KramPatternRequest): { valid: boolean; err
 }
 
 /**
- * Build enhanced prompt with tag context
+ * Build enhanced prompt with tag context - now includes image URLs for DALL-E
  */
-function buildEnhancedPrompt(userPrompt: string, tags: ReadonlyArray<{ name: string; description: string }> = []): string {
+function buildEnhancedPromptWithImages(userPrompt: string, tags: ReadonlyArray<{ name: string; description?: string; image_url?: string }> = []): string {
 	if (tags.length === 0) {
 		return userPrompt;
 	}
 
-	const tagContext = tags.map((tag) => `${tag.name} (${tag.description})`).join(', ');
+	// Create style context from tag names and descriptions
+	const styleContext = tags.map((tag) => `${tag.name} (${tag.description})`).join(', ');
+
+	// Create image reference context for DALL-E (this tells DALL-E about reference images)
+	const imageReferences = tags.map((tag, index) => `Reference image ${index + 1}: ${tag.name} style from ${tag.image_url}`).join('\n');
 
 	return `${userPrompt}
 
-Style inspiration from: ${tagContext}
+Style inspiration from: ${styleContext}
 
-Please incorporate elements and aesthetics from these style references while maintaining the core concept of the original prompt.`;
+Reference images to incorporate stylistic elements from:
+${imageReferences}
+
+Please create an image that combines the core concept from the original prompt with visual style elements inspired by the reference images above. Maintain the artistic integrity while incorporating the aesthetic qualities from these style references.`;
 }
 
 /**
@@ -147,6 +159,7 @@ export async function generateKramPattern(request: KramPatternRequest): Promise<
 	logger.info('Starting Kram Pattern generation', {
 		promptLength: request.prompt.length,
 		tagsCount: request.tags?.length || 0,
+		tagsWithImages: request.tags?.filter((t) => !!t.image_url).length || 0,
 	});
 
 	try {
@@ -156,47 +169,63 @@ export async function generateKramPattern(request: KramPatternRequest): Promise<
 			throw new KramPatternError(`Validation failed: ${validation.errors.join(', ')}`, 'VALIDATION_ERROR', 'validation');
 		}
 
-		// Step 2: Prepare tag context
+		// Step 2: Prepare tag context with image URLs
 		const selectedTags = request.tags || [];
-		const tagContext = selectedTags.map((tag) => ({
+
+		// Create context for image generation (with image URLs)
+		const imageTagContext = selectedTags.map((tag) => ({
+			name: tag.name,
+			// description: tag.description,
+			image_url: tag.image_url, // Include image URL for DALL-E
+		}));
+
+		// Create context for text generation (without image URLs for security)
+		const textTagContext = selectedTags.map((tag) => ({
 			name: tag.name,
 			description: tag.description,
 		}));
 
 		logger.debug('Request validated', {
 			selectedTagsCount: selectedTags.length,
+			tagsWithImages: imageTagContext.filter((t) => !!t.image_url).length,
 			dalleOptions: request.dalle_options,
 			chatOptions: request.chat_options,
 		});
 
-		// Step 3: Generate image with DALL-E
+		// Step 3: Generate image with DALL-E using image URLs
 		const imageGenStartTime = Date.now();
 		let imageResult: ImageResult;
 
 		try {
-			imageResult = await imageHelper(request.prompt, {
+			// Use the enhanced prompt with image URLs for DALL-E
+			const enhancedPrompt = buildEnhancedPromptWithImages(request.prompt, imageTagContext);
+
+			imageResult = await imageHelper(enhancedPrompt, {
 				model: 'dall-e-3',
 				size: request.dalle_options?.size || '1024x1024',
 				quality: request.dalle_options?.quality || 'standard',
-				style: request.dalle_options?.style || 'natural',
-				tags: tagContext,
+				style: request.dalle_options?.style || 'vivid',
+				// Note: imageHelper should be updated to handle image URLs if needed
+				// For now, the enhanced prompt includes image URL references
 			});
+
 			imageGenTime = Date.now() - imageGenStartTime;
 
 			logger.debug('Image generation completed', {
 				imageUrl: imageResult.image_url,
 				generationTime: imageGenTime,
+				usedImageReferences: imageTagContext.length > 0,
 			});
 		} catch (error) {
 			throw new KramPatternError('Failed to generate image', 'IMAGE_GENERATION_ERROR', 'image_generation', error instanceof Error ? error : new Error(String(error)));
 		}
 
-		// Step 4: Generate description with ChatGPT
+		// Step 4: Generate description with ChatGPT (using text context only)
 		const descGenStartTime = Date.now();
 		let description: string;
 
 		try {
-			description = await generateImageDescription(request.prompt, imageResult.image_url, tagContext, {
+			description = await generateImageDescription(request.prompt, imageResult.image_url, textTagContext, {
 				model: request.chat_options?.model || 'gpt-4-turbo',
 				maxTokens: request.chat_options?.max_tokens || 300,
 			});
@@ -236,7 +265,7 @@ export async function generateKramPattern(request: KramPatternRequest): Promise<
 
 		const totalTime = Date.now() - startTime;
 
-		// Prepare final result - convert to mutable array
+		// Prepare final result - don't include image URLs in response for security
 		const result: KramPatternResult = {
 			image_result: imageResult,
 			description,
@@ -246,7 +275,8 @@ export async function generateKramPattern(request: KramPatternRequest): Promise<
 				id: tag.id,
 				name: tag.name,
 				description: tag.description,
-			})), // This creates a mutable array, not readonly
+				// image_url is intentionally excluded from response
+			})),
 		};
 
 		// Log performance metrics
@@ -257,7 +287,10 @@ export async function generateKramPattern(request: KramPatternRequest): Promise<
 			total_processing_time: totalTime,
 		};
 
-		logger.info('Kram Pattern generation completed successfully', metrics);
+		logger.info('Kram Pattern generation completed successfully', {
+			...metrics,
+			usedImageReferences: imageTagContext.length > 0,
+		});
 
 		return result;
 	} catch (error) {

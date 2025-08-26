@@ -59,7 +59,13 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 		}
 
 		// Fetch selected tags if provided
-		let selectedTags: Array<{ id: string; name: string; description: string; image_url: string }> = [];
+		let selectedTags: Array<{
+			id: string;
+			name: string;
+			description: string;
+			image_url: string;
+		}> = [];
+
 		if (body.tag_ids && body.tag_ids.length > 0) {
 			// Validate tag IDs format
 			const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -74,11 +80,18 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 				return NextResponse.json(errorResponse, { status: 400 });
 			}
 
+			// Fetch tags from database with all required fields
 			selectedTags = await prisma.tags.findMany({
 				where: {
 					id: {
 						in: body.tag_ids,
 					},
+				},
+				select: {
+					id: true,
+					name: true,
+					description: true,
+					image_url: true, // Make sure to include image_url
 				},
 			});
 
@@ -94,6 +107,17 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 				};
 				return NextResponse.json(errorResponse, { status: 404 });
 			}
+
+			// Validate that all tags have image_url
+			const tagsWithoutImages = selectedTags.filter((tag) => !tag.image_url || tag.image_url.trim() === '');
+			if (tagsWithoutImages.length > 0) {
+				const errorResponse: ApiResponse<KramPatternResponse> = {
+					success: false,
+					error: 'Tags missing image URLs',
+					message: `The following tags are missing image URLs: ${tagsWithoutImages.map((t) => t.name).join(', ')}`,
+				};
+				return NextResponse.json(errorResponse, { status: 400 });
+			}
 		}
 
 		// Log cost estimation
@@ -105,13 +129,20 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 		});
 
 		logger.debug('Processing cost estimate', costEstimate);
+		logger.debug('Selected tags with image URLs', {
+			tags: selectedTags.map((tag) => ({
+				id: tag.id,
+				name: tag.name,
+				hasImageUrl: !!tag.image_url,
+			})),
+		});
 
-		// Generate Kram Pattern using helper
+		// Generate Kram Pattern using helper - Pass the full tag objects with image_url
 		let kramResult;
 		try {
 			kramResult = await generateKramPattern({
 				prompt: body.prompt,
-				tags: selectedTags,
+				tags: selectedTags, // This now includes image_url field
 				dalle_options: body.dalle_options,
 				chat_options: body.chat_options,
 			});
@@ -172,11 +203,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 
 		const totalProcessingTime = Date.now() - startTime;
 
-		// Prepare response
+		// Prepare response - Only return id, name, description for API response
 		const responseData: KramPatternResponse = {
 			history_id: historyRecord.id,
 			prompt_message: historyRecord.prompt_message,
-			selected_tags: kramResult.selected_tags,
+			selected_tags: kramResult.selected_tags.map((tag: any) => ({
+				id: tag.id,
+				name: tag.name,
+				description: tag.description,
+				// Don't expose image_url in API response for security/bandwidth reasons
+			})),
 			generated_outputs: [
 				{
 					id: outputRecord.id,
@@ -199,6 +235,11 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 							ai_processing_time: kramResult.processing_time,
 							cost_estimate: costEstimate,
 							image_generation_time: kramResult.image_result.generation_time,
+							selected_tags_with_images: selectedTags.map((tag) => ({
+								id: tag.id,
+								name: tag.name,
+								has_image_url: !!tag.image_url,
+							})),
 					  }
 					: undefined,
 		};

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 // API function
@@ -118,7 +119,9 @@ const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({ src, alt, classNa
 					</div>
 				</div>
 			)}
-			<img
+			<Image
+                width={500}
+                height={500}
 				src={src}
 				alt={alt}
 				className={cn('w-full h-full object-cover transition-opacity duration-300', imageLoading ? 'opacity-0' : 'opacity-100')}
